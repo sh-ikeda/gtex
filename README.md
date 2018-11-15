@@ -31,6 +31,7 @@ $ transpose.exe -i 56207x11690 -t gtex_all_sample_tpm.tsv > gtex_all_sample_tpm_
 4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートしたあと、再度行列を転置する
 
 $ sort -t$'\t' -k 4,4 -k 5,5 -k 3,3 gtex_all_sample_tpm_transposed.txt > gtex_all_sample_tpm_transposed_sorted.txt
+
 $ transpose.exe -i 11690x56207 -t gtex_all_sample_tpm_transposed_sorted.txt > gtex_all_sample_tpm_sorted.tsv
 
 組織、性別、年齢ごとに、値を median でまとめる
