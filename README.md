@@ -15,6 +15,7 @@ $ awk -f get_sample_annot.awk GTEx_v7_Annotations_SampleAttributesDS.txt GTEx_An
 4, 5 行目に性別、年齢を持つよう、個体のアノテーションファイルを使って gtex_all_sample_tpm.tsv を修正
 
 $ awk -f get_sbj_annot.awk GTEx_v7_Annotations_SubjectPhenotypesDS.txt gtex_all_sample_tpm.tsv > temp.txt
+
 $ mv temp.txt gtex_all_sample_tpm.tsv
 
 4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートする
@@ -22,12 +23,14 @@ python で行うが、pandas の read_table だと 3 G 近くあるファイル�
 そこで、ソートのキーであるヘッダ部分のみのファイルを作ってソートし、to_csv のオプションを header=True として出力する。
 
 $ head -5 gtex_all_sample_tpm.tsv > gtex_header.tsv
+
 $ python sort_columns_gtex.py gtex_header.tsv gtex_header_sorted.tsv
 
 読み込み時に header=None としているので、データフレームの header には 0 から始まる数値が順に付けられている。
 これのソート後の順番が１行目に header として出力されるので、この部分を読み込んで、元のファイルをこの数値の順に出力することで時間を抑える。
 
 $ head -1 gtex_header_sorted.tsv > gtex_order.tsv
+
 $ awk -f order_by_file_gtex.awk order.txt gtex_all_sample_tpm.tsv > gtex_all_sample_tpm_sorted.tsv
 
 
