@@ -17,23 +17,25 @@ $ awk -f get_sample_annot.awk GTEx_v7_Annotations_SampleAttributesDS.txt GTEx_An
 $ awk -f get_sbj_annot.awk GTEx_v7_Annotations_SubjectPhenotypesDS.txt gtex_all_sample_tpm.tsv > temp.txt
 $ mv temp.txt gtex_all_sample_tpm.tsv
 
-sort コマンドが列方向のソートをできないようなので、転置してからソート
-transpose コマンド (http://downloads.sourceforge.net/project/transpose/transpose/transpose-2.0/2.0/transpose-2.0.zip) はデフォルトだと 1000x1000 までしか転置せず、それ以上のサイズを取り扱いたい場合は -i オプションでサイズを指定する必要がある
+4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートする
+python で行うが、pandas の read_table だと 3 G 近くあるファイルを読み込むだけでもかなりの時間がかかる。
+そこで、ソートのキーであるヘッダ部分のみのファイルを作ってソートし、to_csv のオプションを header=True として出力する。
 
-$ head -1 gtex_all_sample_tpm.tsv | awk -F "\t" '{print NF}'
-11690
+$ head -5 gtex_all_sample_tpm.tsv > gtex_header.tsv
+$ python sort_columns_gtex.py gtex_header.tsv gtex_header_sorted.tsv
 
-$ wc -l gtex_all_sample_tpm.tsv
-56207 gtex_all_sample_tpm.tsv
+読み込み時に header=None としているので、データフレームの header には 0 から始まる数値が順に付けられている。
+これのソート後の順番が１行目に header として出力されるので、この部分を読み込んで、元のファイルをこの数値の順に出力することで時間を抑える。
 
-$ transpose.exe -i 56207x11690 -t gtex_all_sample_tpm.tsv > gtex_all_sample_tpm_transposed.txt
+$ head -1 gtex_header_sorted.tsv > gtex_order.tsv
+$ awk -f order_by_file_gtex.awk order.txt gtex_all_sample_tpm.tsv > gtex_all_sample_tpm_sorted.tsv
 
-4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートしたあと、再度行列を転置する
-
-$ sort -t$'\t' -k 4,4 -k 5,5 -k 3,3 gtex_all_sample_tpm_transposed.txt > gtex_all_sample_tpm_transposed_sorted.txt
-
-$ transpose.exe -i 11690x56207 -t gtex_all_sample_tpm_transposed_sorted.txt > gtex_all_sample_tpm_sorted.tsv
 
 組織、性別、年齢ごとに、値を median でまとめる
 
 $ awk -f assemble_as_median.awk gtex_all_sample_tpm_sorted.tsv > gtex_grouped_tpm.tsv
+
+TPM の値を log2 に変換する
+0 もあるので、全部の値に 1 を足してから変換する
+
+$ awk -F "\t" 'FNR<=3{print} FNR>=4{printf $1 "\t" $2; for(i=3; i<=NF; i++) {printf "\t" log(1+$i)/log(2);} printf "\n"}' gtex_grouped_tpm.tsv > gtex_grouped_log2_tpm.tsv
