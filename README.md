@@ -1,5 +1,5 @@
 # gtex
-Process GTEx data for importing to RefEx
+Process GTEx data for importing to RefEx  
 GTEx のデータを RefEx にインポートできるようにする
 - GTEx の発現量データ (TPM)
   https://storage.googleapis.com/gtex_analysis_v7/rna_seq_data/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_tpm.gct.gz
@@ -18,8 +18,8 @@ $ awk -f get_sbj_annot.awk GTEx_v7_Annotations_SubjectPhenotypesDS.txt gtex_all_
 
 $ mv temp.txt gtex_all_sample_tpm.tsv
 
-4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートする
-python で行うが、pandas の read_table だと 3 G 近くあるファイルを読み込むだけでもかなりの時間がかかる。
+4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートする  
+python で行うが、pandas の read_table だと 3 G 近くあるファイルを読み込むだけでもかなりの時間がかかる。  
 そこで、ソートのキーであるヘッダ部分のみのファイルを作ってソートし、to_csv のオプションを header=True として出力する。
 
 $ head -5 gtex_all_sample_tpm.tsv > gtex_header.tsv
@@ -38,7 +38,7 @@ $ awk -f order_by_file_gtex.awk order.txt gtex_all_sample_tpm.tsv > gtex_all_sam
 
 $ awk -f assemble_as_median.awk gtex_all_sample_tpm_sorted.tsv > gtex_grouped_tpm.tsv
 
-TPM の値を log2 に変換する
+TPM の値を log2 に変換する  
 0 もあるので、全部の値に 1 を足してから変換する
 
 $ awk -F "\t" 'FNR<=3{print} FNR>=4{printf $1 "\t" $2; for(i=3; i<=NF; i++) {printf "\t" log(1+$i)/log(2);} printf "\n"}' gtex_grouped_tpm.tsv > gtex_grouped_log2_tpm.tsv
