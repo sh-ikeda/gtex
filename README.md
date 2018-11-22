@@ -1,13 +1,12 @@
-# gtex
-Process GTEx data for importing to RefEx  
-GTEx のデータを RefEx にインポートできるようにする
+# GTEx の発現量データを RefEx に収載する
+## ファイルのダウンロード
 - GTEx の発現量データ (TPM)
   https://storage.googleapis.com/gtex_analysis_v7/rna_seq_data/GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_tpm.gct.gz
 - サンプルのアノテーション
   https://storage.googleapis.com/gtex_analysis_v7/annotations/GTEx_v7_Annotations_SampleAttributesDS.txt
 - 個体のアノテーション
   https://storage.googleapis.com/gtex_analysis_v7/annotations/GTEx_v7_Annotations_SubjectPhenotypesDS.txt
-
+## アノテーション情報の取得
 発現量データのサンプル名の行の下に、必要なアノテーション(組織名)を取り込む
 
 $ awk -f get_sample_annot.awk GTEx_v7_Annotations_SampleAttributesDS.txt GTEx_Analysis_2016-01-15_v7_RNASeQCv1.1.8_gene_tpm.gct > gtex_all_sample_tpm.tsv
@@ -17,7 +16,7 @@ $ awk -f get_sample_annot.awk GTEx_v7_Annotations_SampleAttributesDS.txt GTEx_An
 $ awk -f get_sbj_annot.awk GTEx_v7_Annotations_SubjectPhenotypesDS.txt gtex_all_sample_tpm.tsv > temp.txt
 
 $ mv temp.txt gtex_all_sample_tpm.tsv
-
+## 性別、年齢、組織ごとに発現量をまとめる
 4 列目が性別、5 列目が年齢、3 列目が組織となっているので、その優先順でソートする  
 python で行うが、pandas の read_table だと 3 G 近くあるファイルを読み込むだけでもかなりの時間がかかる。  
 そこで、ソートのキーであるヘッダ部分のみのファイルを作ってソートし、to_csv のオプションを header=True として出力する。
